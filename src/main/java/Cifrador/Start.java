@@ -1,6 +1,15 @@
 package Cifrador;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Start extends javax.swing.JFrame {
 
@@ -183,7 +192,36 @@ public class Start extends javax.swing.JFrame {
     }//GEN-LAST:event_jPanel1MouseReleased
 
     private void btnSelectTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectTextActionPerformed
-        // TODO add your handling code here:
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos de texto", "txt");
+        fileChooser.setFileFilter(filter);
+        int op = fileChooser.showOpenDialog(this);
+        
+        FileReader fr = null;
+        BufferedReader br = null;
+        String texto = "";
+        
+        if (op == JFileChooser.APPROVE_OPTION) {
+            try {
+                File file = fileChooser.getSelectedFile();
+                
+                fr = new FileReader (file);
+                br = new BufferedReader(fr);
+                
+                String linea;
+                
+                while((linea=br.readLine())!=null)
+                   texto += linea + "\n";
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Start.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Start.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        EncryptText v = new EncryptText(texto);
+        v.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_btnSelectTextActionPerformed
 
     private void btnSelectTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnSelectTextMouseEntered
