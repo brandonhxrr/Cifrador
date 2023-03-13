@@ -217,11 +217,11 @@ public class Start extends javax.swing.JFrame {
             } catch (IOException ex) {
                 Logger.getLogger(Start.class.getName()).log(Level.SEVERE, null, ex);
             }
+            
+            
+            EncryptText v = new EncryptText(texto);
+            v.setVisible(true);
         }
-        
-        EncryptText v = new EncryptText(texto);
-        v.setVisible(true);
-        this.dispose();
     }//GEN-LAST:event_btnSelectTextActionPerformed
 
     private void btnSelectTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnSelectTextMouseEntered
@@ -245,7 +245,23 @@ public class Start extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSelectImageMouseExited
 
     private void btnSelectImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectImageActionPerformed
-        // TODO add your handling code here:
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Imágenes BMP", "bmp");
+        fileChooser.setFileFilter(filter);
+        int op = fileChooser.showOpenDialog(this);
+        
+        String path = "";
+        
+        if (op == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            path = file.getPath();
+            System.out.println("PATH: " + path);
+            
+            EncryptImage v = new EncryptImage(path);
+            v.setVisible(true);
+        }
+        
+        
     }//GEN-LAST:event_btnSelectImageActionPerformed
 
     public static void main(String args[]) {
