@@ -1,5 +1,13 @@
 package Cifrador;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 
 public class EncryptText extends javax.swing.JFrame {
@@ -8,14 +16,21 @@ public class EncryptText extends javax.swing.JFrame {
     static ImageIcon icon;
     static String texto;
     
+    CifradorOpen cifrador;
+    InputStream is;
+    OutputStream os;
+    
     public EncryptText(String texto) {
         initComponents();
         close_btn.setIcon(new ImageIcon("src/main/java/icons/close_disabled.png")); 
         title.setIcon(new ImageIcon("src/main/java/icons/favicon.png"));
         btnDecrypt.setIcon(new ImageIcon("src/main/java/icons/encrypt_icon.png"));
         btn_back.setIcon(new ImageIcon("src/main/java/icons/back_disabled.png")); 
-        this.texto = texto;
+        EncryptText.texto = texto;
         originalText.setText(texto);
+        
+        cifrador = new CifradorOpen(3);
+        cifrarTexto();
     }
 
     @SuppressWarnings("unchecked")
@@ -238,7 +253,25 @@ public class EncryptText extends javax.swing.JFrame {
     }//GEN-LAST:event_btnDecryptMouseExited
 
     private void btnDecryptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDecryptActionPerformed
-        // TODO add your handling code here:
+        if(btnDecrypt.getText().equals("Descifrar")){
+            String textoCifrado = os.toString();
+        
+            try {
+                is = null;
+                os = new ByteArrayOutputStream();
+                is = new ByteArrayInputStream(textoCifrado.getBytes());
+                cifrador.descifrar(is, os);
+            } catch (IOException ex) {
+                Logger.getLogger(EncryptText.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            originalText.setText(textoCifrado);
+            encryptedText.setText(os.toString());
+            btnDecrypt.setText("Cifrar");
+            title1.setText("Texto cifrado");
+            title2.setText("Texto descifrado");
+        }else {
+            cifrarTexto();
+        }
     }//GEN-LAST:event_btnDecryptActionPerformed
 
     private void btn_backMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_backMouseEntered
@@ -253,6 +286,29 @@ public class EncryptText extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_btn_backActionPerformed
 
+    public final void cifrarTexto(){
+        String textoOriginal;
+        if(btnDecrypt.getText().equals("Cifrar")){
+            textoOriginal = encryptedText.getText();
+        }else{
+            textoOriginal = originalText.getText();
+        }
+        
+        is = new ByteArrayInputStream(textoOriginal.getBytes());
+        os = new ByteArrayOutputStream();
+        try {
+            cifrador.cifrar(is, os);
+        } catch (IOException ex) {
+            Logger.getLogger(EncryptText.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        encryptedText.setText(os.toString());
+        originalText.setText(textoOriginal);
+        btnDecrypt.setText("Descifrar");
+        title1.setText("Texto original");
+        title2.setText("Texto cifrado");
+    }
+    
+    
     public static void main(String args[]) {
 
         try {
