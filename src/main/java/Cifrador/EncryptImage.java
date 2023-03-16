@@ -1,8 +1,15 @@
 package Cifrador;
 
+import java.awt.Color;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +22,11 @@ public class EncryptImage extends javax.swing.JFrame {
     static ImageIcon icon;
     static String path = "";
     
+    String archivoCifrado;
+    String clave;
+    
+    
+    
     public EncryptImage(String path) {
         initComponents();
         close_btn.setIcon(new ImageIcon("src/main/java/icons/close_disabled.png")); 
@@ -23,24 +35,10 @@ public class EncryptImage extends javax.swing.JFrame {
         btn_back.setIcon(new ImageIcon("src/main/java/icons/back_disabled.png")); 
         
         this.path = path;
+        clave = "0xFF";
+        archivoCifrado = cifrar(clave);
         
-        File original = new File(path);
-        
-        try {
-            BufferedImage bmpImage = ImageIO.read(new File(path));
-            File pngFile = new File(original.getParent() + original.getName()+".png");
-            ImageIO.write(bmpImage, "png", pngFile);
-            ImageIcon icon = new ImageIcon(pngFile.getAbsolutePath());
-            
-            Image newImg = icon.getImage().getScaledInstance(originalImage.getWidth(), originalImage.getHeight(), Image.SCALE_SMOOTH);
-            ImageIcon newIcon = new ImageIcon(newImg);
-            originalImage.setIcon(newIcon);
 
-
-
-        } catch (IOException ex) {
-            Logger.getLogger(EncryptImage.class.getName()).log(Level.SEVERE, null, ex);
-        }
         //originalImage.setIcon(new ImageIcon(path)); // NOI18N
     }
 
@@ -105,7 +103,7 @@ public class EncryptImage extends javax.swing.JFrame {
         title2.setText("Imagen cifrada");
 
         btnDecrypt.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        btnDecrypt.setText("Descrifrar");
+        btnDecrypt.setText("Descifrar");
         btnDecrypt.setBorder(null);
         btnDecrypt.setContentAreaFilled(false);
         btnDecrypt.setFocusPainted(false);
@@ -249,7 +247,14 @@ public class EncryptImage extends javax.swing.JFrame {
     }//GEN-LAST:event_btnDecryptMouseExited
 
     private void btnDecryptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDecryptActionPerformed
-        // TODO add your handling code here:
+        if(btnDecrypt.getText().equals("Descifrar")){
+            descifrar(archivoCifrado, clave);
+            btnDecrypt.setText("Cifrar");
+        }else{
+            cifrar(clave);
+            btnDecrypt.setText("Descifrar");
+        }
+        
     }//GEN-LAST:event_btnDecryptActionPerformed
 
     private void btn_backMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_backMouseEntered
@@ -264,6 +269,106 @@ public class EncryptImage extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_btn_backActionPerformed
 
+    // Función para cifrar una imagen BMP
+    public String cifrar(String clave) {
+        File cifradoFile = null;
+        try {
+            // Leer la imagen original
+            File original = new File(path);
+            BufferedImage bmpImage = ImageIO.read(original);
+            
+            File pngFile = new File(original.getParent() + original.getName() + ".png");
+            ImageIO.write(bmpImage, "png", pngFile);
+            ImageIcon icon = new ImageIcon(pngFile.getAbsolutePath());
+
+            Image newImg = icon.getImage().getScaledInstance(originalImage.getWidth(), originalImage.getHeight(), Image.SCALE_SMOOTH);
+            ImageIcon newIcon = new ImageIcon(newImg);
+            originalImage.setIcon(newIcon);
+            
+             // Crear una nueva imagen con el mismo tamaño que la imagen original
+            BufferedImage cifradaImage = new BufferedImage(bmpImage.getWidth(), bmpImage.getHeight(), bmpImage.getType());
+
+            // Obtener el entero correspondiente a la clave en base 16
+            int intClave = Integer.parseInt(clave.substring(2), 16);
+
+            // Recorrer los píxeles de la imagen original y cifrarlos
+            for (int y = 0; y < bmpImage.getHeight(); y++) {
+                for (int x = 0; x < bmpImage.getWidth(); x++) {
+                    int rgb = bmpImage.getRGB(x, y);
+                    int r = (rgb >> 16) & 0xFF;
+                    int g = (rgb >> 8) & 0xFF;
+                    int b = rgb & 0xFF;
+                    r ^= intClave;
+                    g ^= intClave;
+                    b ^= intClave;
+                    int cifradoRgb = (r << 16) | (g << 8) | b;
+                    cifradaImage.setRGB(x, y, cifradoRgb);
+                }
+            }
+
+            // Escribir la nueva imagen cifrada en un archivo BMP
+            cifradoFile = new File(original.getParent() + "/cifrado.bmp");
+            ImageIO.write(cifradaImage, "bmp", cifradoFile);
+
+            // Cargar y mostrar la imagen cifrada en el programa
+            BufferedImage cifradaBMP = ImageIO.read(cifradoFile);
+            ImageIcon cifradaIcon = new ImageIcon(cifradaBMP);
+            Image newEncryptedImageIcon = cifradaIcon.getImage().getScaledInstance(encryptedImage.getWidth(), encryptedImage.getHeight(), Image.SCALE_SMOOTH);
+            ImageIcon newEncryptedIcon = new ImageIcon(newEncryptedImageIcon);            
+            encryptedImage.setIcon(newEncryptedIcon);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return cifradoFile.getAbsolutePath();
+    }
+
+    // Función para descifrar una imagen BMP
+    public void descifrar(String ruta, String clave) {
+        try {
+            // Leer la imagen cifrada
+            File cifrado = new File(ruta);
+            BufferedImage cifradaImage = ImageIO.read(cifrado);
+
+            // Crear una nueva imagen con el mismo tamaño que la imagen cifrada
+            BufferedImage descifradaImage = new BufferedImage(cifradaImage.getWidth(), cifradaImage.getHeight(), cifradaImage.getType());
+
+            // Obtener el entero correspondiente a la clave en base 16
+            int intClave = Integer.parseInt(clave.substring(2), 16);
+
+            // Recorrer los píxeles de la imagen cifrada y descifrarlos
+            for (int y = 0; y < cifradaImage.getHeight(); y++) {
+                for (int x = 0; x < cifradaImage.getWidth(); x++) {
+                    int cifradoRgb = cifradaImage.getRGB(x, y);
+                    int r = (cifradoRgb >> 16) & 0xFF;
+                    int g = (cifradoRgb >> 8) & 0xFF;
+                    int b = cifradoRgb & 0xFF;
+                    r ^= intClave;
+                    g ^= intClave;
+                    b ^= intClave;
+                    // Crear el nuevo color descifrado y establecerlo en la nueva imagen
+                    Color descifradoColor = new Color(r, g, b);
+                    descifradaImage.setRGB(x, y, descifradoColor.getRGB());
+                }
+            }
+
+            // Escribir la nueva imagen descifrada en un archivo BMP
+            File descifradoFile = new File(cifrado.getParent() + "/descifrado.bmp");
+            ImageIO.write(descifradaImage, "bmp", descifradoFile);
+
+            // Cargar y mostrar la imagen cifrada en el programa
+            BufferedImage cifradaBMP = ImageIO.read(descifradoFile);
+            ImageIcon cifradaIcon = new ImageIcon(cifradaBMP);
+
+            Image newEncryptedImageIcon = cifradaIcon.getImage().getScaledInstance(encryptedImage.getWidth(), encryptedImage.getHeight(), Image.SCALE_SMOOTH);
+            ImageIcon newEncryptedIcon = new ImageIcon(newEncryptedImageIcon);
+
+            encryptedImage.setIcon(newEncryptedIcon);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    
     public static void main(String args[]) {
 
         try {
