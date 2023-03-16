@@ -2,17 +2,9 @@ package Cifrador;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
@@ -25,8 +17,6 @@ public class EncryptImage extends javax.swing.JFrame {
     String archivoCifrado;
     String clave;
     
-    
-    
     public EncryptImage(String path) {
         initComponents();
         close_btn.setIcon(new ImageIcon("src/main/java/icons/close_disabled.png")); 
@@ -37,9 +27,6 @@ public class EncryptImage extends javax.swing.JFrame {
         this.path = path;
         clave = "0xFF";
         archivoCifrado = cifrar(clave);
-        
-
-        //originalImage.setIcon(new ImageIcon(path)); // NOI18N
     }
 
     @SuppressWarnings("unchecked")
@@ -269,7 +256,6 @@ public class EncryptImage extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_btn_backActionPerformed
 
-    // Función para cifrar una imagen BMP
     public String cifrar(String clave) {
         File cifradoFile = null;
         try {
@@ -310,7 +296,7 @@ public class EncryptImage extends javax.swing.JFrame {
             cifradoFile = new File(original.getParent() + "/cifrado.bmp");
             ImageIO.write(cifradaImage, "bmp", cifradoFile);
 
-            // Cargar y mostrar la imagen cifrada en el programa
+            // Cargar y mostrar la imagen cifrada
             BufferedImage cifradaBMP = ImageIO.read(cifradoFile);
             ImageIcon cifradaIcon = new ImageIcon(cifradaBMP);
             Image newEncryptedImageIcon = cifradaIcon.getImage().getScaledInstance(encryptedImage.getWidth(), encryptedImage.getHeight(), Image.SCALE_SMOOTH);
@@ -322,7 +308,6 @@ public class EncryptImage extends javax.swing.JFrame {
         return cifradoFile.getAbsolutePath();
     }
 
-    // Función para descifrar una imagen BMP
     public void descifrar(String ruta, String clave) {
         try {
             // Leer la imagen cifrada
@@ -351,11 +336,11 @@ public class EncryptImage extends javax.swing.JFrame {
                 }
             }
 
-            // Escribir la nueva imagen descifrada en un archivo BMP
+            // Escribir la nueva imagen cifrada en un archivo BMP
             File descifradoFile = new File(cifrado.getParent() + "/descifrado.bmp");
             ImageIO.write(descifradaImage, "bmp", descifradoFile);
 
-            // Cargar y mostrar la imagen cifrada en el programa
+            // Cargar y mostrar la imagen cifrada
             BufferedImage cifradaBMP = ImageIO.read(descifradoFile);
             ImageIcon cifradaIcon = new ImageIcon(cifradaBMP);
 
